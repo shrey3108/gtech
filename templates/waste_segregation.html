@@ -1,0 +1,433 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header Section -->
+    <div class="text-center mb-5">
+        <h1 class="display-4">Waste Segregation Assistant</h1>
+        <p class="lead text-muted">Upload an image of waste items and let our AI help you segregate them properly</p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row justify-content-center">
+        <!-- Upload Section -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <!-- Upload Zone -->
+                    <div class="upload-zone mb-4" id="uploadZone">
+                        <div class="text-center py-5">
+                            <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                            <h5>Drop your image here or click to upload</h5>
+                            <p class="text-muted small mb-0">Supports JPG, PNG, GIF (Max 5MB)</p>
+                            <input type="file" id="imageInput" class="d-none" accept="image/*">
+                        </div>
+                        <div id="previewZone" class="d-none">
+                            <img id="imagePreview" class="img-fluid rounded" alt="Preview">
+                            <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" id="removeImage">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <div class="text-center">
+                        <button class="btn btn-primary btn-lg px-5" id="analyzeBtn" disabled>
+                            <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
+                            Analyze Waste
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="card border-0 shadow-sm d-none" id="resultsCard">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-4">Analysis Results</h4>
+                    
+                    <!-- Category and Instructions -->
+                    <div class="result-section mb-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="icon-circle bg-primary-subtle p-3 rounded-circle me-3">
+                                <i class="fas fa-recycle text-primary"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1" id="itemType">Item Type</h5>
+                                <p class="mb-0 text-muted" id="category">Category</p>
+                            </div>
+                        </div>
+                        <div class="alert alert-light border" id="instructions">
+                            Disposal instructions will appear here
+                        </div>
+                    </div>
+
+                    <!-- Environmental Impact -->
+                    <div class="result-section mb-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="icon-circle bg-success-subtle p-3 rounded-circle me-3">
+                                <i class="fas fa-leaf text-success"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">Environmental Impact</h5>
+                                <p class="mb-0 text-muted" id="impact">Impact information will appear here</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Points Earned -->
+                    <div class="result-section">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-circle bg-warning-subtle p-3 rounded-circle me-3">
+                                <i class="fas fa-star text-warning"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">Points Earned</h5>
+                                <p class="mb-0">
+                                    <span class="badge bg-success" id="pointsEarned">+0 points</span>
+                                    <span class="text-muted ms-2">Total: <span id="totalPoints">0</span> points</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="col-lg-4">
+            <!-- Your Stats -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-4">Your Stats</h5>
+                    <div class="stats-grid">
+                        <div class="stat-item text-center p-3 border rounded mb-3">
+                            <h3 class="mb-0" id="itemsRecycled">0</h3>
+                            <small class="text-muted">Items Recycled</small>
+                        </div>
+                        <div class="stat-item text-center p-3 border rounded mb-3">
+                            <h3 class="mb-0" id="ecoPoints">0</h3>
+                            <small class="text-muted">Eco Points</small>
+                        </div>
+                        <div class="stat-item text-center p-3 border rounded">
+                            <h3 class="mb-0" id="streak">0</h3>
+                            <small class="text-muted">Day Streak</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Educational Section -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-4">Did You Know?</h5>
+                    <div class="educational-fact mb-3 p-3 border rounded" id="educationalFact">
+                        Learn interesting facts about waste management and recycling
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error Alert -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <!-- Error message will be inserted here -->
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<style>
+.upload-zone {
+    border: 2px dashed #dee2e6;
+    border-radius: 0.5rem;
+    position: relative;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+    cursor: pointer;
+}
+
+.upload-zone:hover {
+    border-color: #0d6efd;
+    background: #f1f4f9;
+}
+
+.upload-zone.dragover {
+    border-color: #0d6efd;
+    background: #e9ecef;
+}
+
+#previewZone {
+    position: relative;
+}
+
+.icon-circle {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stats-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.educational-fact {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.result-section {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.result-section:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.result-section:nth-child(3) {
+    animation-delay: 0.4s;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadZone = document.getElementById('uploadZone');
+    const imageInput = document.getElementById('imageInput');
+    const previewZone = document.getElementById('previewZone');
+    const imagePreview = document.getElementById('imagePreview');
+    const removeImage = document.getElementById('removeImage');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const resultsCard = document.getElementById('resultsCard');
+    
+    // Initialize toast
+    const errorToast = new bootstrap.Toast(document.getElementById('errorToast'));
+    
+    // Load initial stats when page loads
+    loadUserStats();
+    loadEducationalFact();
+    
+    // Function to load user stats
+    function loadUserStats() {
+        fetch('/get_user_stats')
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error:', data.error);
+                    return;
+                }
+                // Update stats with animation
+                animateNumber('itemsRecycled', data.total_items || 0);
+                animateNumber('ecoPoints', data.eco_points || 0);
+                animateNumber('streak', data.streak || 0);
+            })
+            .catch(error => {
+                console.error('Error loading stats:', error);
+            });
+    }
+    
+    // Function to animate number changes
+    function animateNumber(elementId, target) {
+        const element = document.getElementById(elementId);
+        const start = parseInt(element.textContent) || 0;
+        const duration = 1000;
+        const steps = 60;
+        const increment = (target - start) / steps;
+        
+        let current = start;
+        const timer = setInterval(() => {
+            current += increment;
+            element.textContent = Math.round(current);
+            
+            if ((increment >= 0 && current >= target) || 
+                (increment < 0 && current <= target)) {
+                element.textContent = target;
+                clearInterval(timer);
+            }
+        }, duration / steps);
+    }
+    
+    // Function to load educational fact
+    function loadEducationalFact() {
+        fetch('/get_educational_fact')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('educationalFact').textContent = data.fact;
+            })
+            .catch(error => {
+                console.error('Error loading educational fact:', error);
+            });
+    }
+
+    // Handle drag and drop
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadZone.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadZone.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadZone.addEventListener(eventName, unhighlight, false);
+    });
+    
+    uploadZone.addEventListener('drop', handleDrop, false);
+    
+    // Handle click to upload
+    uploadZone.addEventListener('click', () => {
+        if (previewZone.classList.contains('d-none')) {
+            imageInput.click();
+        }
+    });
+    
+    // Handle file selection
+    imageInput.addEventListener('change', handleFiles);
+    
+    // Handle remove image
+    removeImage.addEventListener('click', function(e) {
+        e.stopPropagation();
+        resetUpload();
+    });
+    
+    // Handle analyze button
+    analyzeBtn.addEventListener('click', analyzeImage);
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    function highlight(e) {
+        uploadZone.classList.add('dragover');
+    }
+    
+    function unhighlight(e) {
+        uploadZone.classList.remove('dragover');
+    }
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    }
+    
+    function handleFiles(files) {
+        if (files instanceof FileList) {
+            files = Array.from(files);
+        } else if (files instanceof Event) {
+            files = Array.from(this.files);
+        }
+        
+        if (files.length === 0) return;
+        
+        const file = files[0];
+        
+        // Validate file type
+        if (!file.type.match('image.*')) {
+            showError('Please upload an image file (JPG, PNG, or GIF)');
+            return;
+        }
+        
+        // Validate file size (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            showError('File size should not exceed 5MB');
+            return;
+        }
+        
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imagePreview.src = e.target.result;
+            previewZone.classList.remove('d-none');
+            uploadZone.querySelector('.text-center').classList.add('d-none');
+            analyzeBtn.disabled = false;
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    function resetUpload() {
+        imageInput.value = '';
+        imagePreview.src = '';
+        previewZone.classList.add('d-none');
+        uploadZone.querySelector('.text-center').classList.remove('d-none');
+        analyzeBtn.disabled = true;
+        resultsCard.classList.add('d-none');
+    }
+    
+    function showError(message) {
+        const toastBody = document.querySelector('.toast-body');
+        toastBody.textContent = message;
+        errorToast.show();
+    }
+    
+    function analyzeImage() {
+        // Show loading state
+        analyzeBtn.disabled = true;
+        analyzeBtn.querySelector('.spinner-border').classList.remove('d-none');
+        
+        // Get the image data
+        const formData = new FormData();
+        formData.append('image', imageInput.files[0]);
+        
+        // Send to server
+        fetch('/analyze_waste', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // Update results
+            document.getElementById('itemType').textContent = data.item_type;
+            document.getElementById('category').textContent = data.category;
+            document.getElementById('instructions').textContent = data.instructions;
+            document.getElementById('impact').textContent = data.impact;
+            
+            // Update stats
+            document.getElementById('itemsRecycled').textContent = data.stats.items_recycled;
+            document.getElementById('ecoPoints').textContent = data.stats.eco_points;
+            document.getElementById('streak').textContent = data.stats.streak;
+            
+            // Update points
+            document.getElementById('pointsEarned').textContent = `+${data.points_earned} points`;
+            document.getElementById('totalPoints').textContent = data.stats.eco_points;
+            
+            // Update educational fact
+            document.getElementById('educationalFact').textContent = data.educational_fact;
+            
+            // Show results
+            resultsCard.classList.remove('d-none');
+            
+            // Scroll to results
+            resultsCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        })
+        .catch(error => {
+            showError(error.message || 'Error analyzing image. Please try again.');
+        })
+        .finally(() => {
+            // Reset loading state
+            analyzeBtn.disabled = false;
+            analyzeBtn.querySelector('.spinner-border').classList.add('d-none');
+        });
+    }
+});
+</script>
+{% endblock %}

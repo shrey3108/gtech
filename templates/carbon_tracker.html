@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block title %}Carbon Tracker{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass-card">
+                <h2 class="text-center mb-4">
+                    <i class="fas fa-cloud me-2 text-success"></i>
+                    Carbon Footprint Tracker
+                </h2>
+                <p class="text-center lead">
+                    Track and reduce your carbon footprint
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="glass-card metric-card">
+                <i class="fas fa-cloud"></i>
+                <div class="metric-value">{{ total_impact|round|int }}</div>
+                <div class="metric-label">kg CO2 Total Impact</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card metric-card">
+                <i class="fas fa-tasks"></i>
+                <div class="metric-value">{{ activities_count }}</div>
+                <div class="metric-label">Activities Logged</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card metric-card">
+                <i class="fas fa-globe"></i>
+                <div class="metric-value">{{ (total_impact / global_stats.total_carbon_tracked * 100)|round|int if global_stats.total_carbon_tracked > 0 else 0 }}%</div>
+                <div class="metric-label">Of Global Impact</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Form -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass-card">
+                <h4 class="mb-4">Log New Activity</h4>
+                <form id="activityForm">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="activityType" class="form-label">Activity Type</label>
+                            <select class="form-select" id="activityType" name="activityType" required>
+                                <option value="">Select Type</option>
+                                <option value="transport">Transportation</option>
+                                <option value="energy">Energy Usage</option>
+                                <option value="waste">Waste Management</option>
+                                <option value="food">Food & Diet</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="specificActivity" class="form-label">Specific Activity</label>
+                            <select class="form-select" id="specificActivity" name="specificActivity" required>
+                                <option value="">Select Activity</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="quantity" class="form-label">Quantity</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" step="0.1" min="0.1" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="unit" class="form-label">Unit</label>
+                            <select class="form-select" id="unit" name="unit" required>
+                                <option value="">Select Unit</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Log Activity
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="row">
+        <div class="col-12">
+            <div class="glass-card">
+                <h4 class="mb-4">Recent Activities</h4>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Activity Type</th>
+                                <th>Specific Activity</th>
+                                <th>Quantity</th>
+                                <th>Unit</th>
+                                <th>Impact (kg CO2)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activitiesTable">
+                            {% for activity in activities %}
+                            <tr>
+                                <td>{{ activity.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ activity.activity_type }}</td>
+                                <td>{{ activity.specific_activity }}</td>
+                                <td>{{ activity.quantity }}</td>
+                                <td>{{ activity.unit }}</td>
+                                <td>{{ activity.carbon_impact|round(2) }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center">No activities logged yet</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification -->
+<div class="notification" id="notification"></div>
+
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: transform 0.3s ease;
+    }
+
+    .glass-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .metric-card {
+        text-align: center;
+        padding: 15px;
+    }
+
+    .metric-card i {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        color: #4CAF50;
+    }
+
+    .metric-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #2196F3;
+    }
+
+    .metric-label {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 25px;
+        border-radius: 10px;
+        color: white;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .notification.show {
+        opacity: 1;
+    }
+
+    .notification.success {
+        background-color: #4CAF50;
+    }
+
+    .notification.error {
+        background-color: #f44336;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const activityForm = document.getElementById('activityForm');
+    const activityType = document.getElementById('activityType');
+    const specificActivity = document.getElementById('specificActivity');
+    const unit = document.getElementById('unit');
+    const notification = document.getElementById('notification');
+
+    // Activity options based on type
+    const activityOptions = {
+        'transport': {
+            activities: ['Car Travel', 'Bus Travel', 'Train Travel', 'Air Travel', 'Bicycle'],
+            units: ['km', 'miles']
+        },
+        'energy': {
+            activities: ['Electricity Usage', 'Natural Gas', 'Heating Oil'],
+            units: ['kWh', 'therms', 'gallons']
+        },
+        'waste': {
+            activities: ['Landfill Waste', 'Recycling', 'Composting'],
+            units: ['kg', 'lbs']
+        },
+        'food': {
+            activities: ['Meat Consumption', 'Dairy Products', 'Plant-based Meals'],
+            units: ['kg', 'lbs', 'servings']
+        }
+    };
+
+    // Update specific activities when activity type changes
+    activityType.addEventListener('change', function() {
+        const selectedType = this.value;
+        const options = activityOptions[selectedType] || { activities: [], units: [] };
+
+        // Update specific activities
+        specificActivity.innerHTML = '<option value="">Select Activity</option>' +
+            options.activities.map(activity =>
+                `<option value="${activity.toLowerCase().replace(/ /g, '_')}">${activity}</option>`
+            ).join('');
+
+        // Update units
+        unit.innerHTML = '<option value="">Select Unit</option>' +
+            options.units.map(unit =>
+                `<option value="${unit}">${unit}</option>`
+            ).join('');
+    });
+
+    // Handle form submission
+    activityForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const data = {
+            activityType: formData.get('activityType'),
+            specificActivity: formData.get('specificActivity'),
+            quantity: parseFloat(formData.get('quantity')),
+            unit: formData.get('unit')
+        };
+
+        console.log('Submitting data:', data);  // Debug log
+
+        fetch('/api/log_activity', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Response:', data);  // Debug log
+            if (data.success) {
+                showNotification(data.message || 'Activity logged successfully!', 'success');
+                activityForm.reset();
+                setTimeout(() => location.reload(), 1000); // Reload after 1 second
+            } else {
+                showNotification(data.error || 'Error logging activity', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);  // Debug log
+            showNotification('Error logging activity', 'error');
+        });
+    });
+
+    // Show notification
+    function showNotification(message, type) {
+        notification.textContent = message;
+        notification.className = `notification ${type}`;
+        notification.classList.add('show');
+        setTimeout(() => notification.classList.remove('show'), 3000);
+    }
+});
+</script>
+{% endblock %}

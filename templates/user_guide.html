@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}User Guide{% endblock %}
+
+{% block styles %}
+<style>
+    .guide-section {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .guide-section h3 {
+        color: #2c3e50;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #00c853;
+        padding-bottom: 10px;
+    }
+    
+    .feature-card {
+        border-left: 4px solid #00c853;
+        padding: 15px;
+        margin-bottom: 15px;
+        background: #f8f9fa;
+    }
+    
+    .step-card {
+        background: #fff;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    .step-number {
+        background: #00c853;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1><i class="fas fa-book-reader text-success me-3"></i>User Guide</h1>
+        <p class="lead">Learn how to make the most of EcoTrack+ features</p>
+    </div>
+
+    <!-- Energy Monitoring -->
+    <div class="guide-section">
+        <h3><i class="fas fa-bolt text-warning me-2"></i>Energy Monitoring</h3>
+        <div class="feature-card">
+            <h5>Key Features:</h5>
+            <ul>
+                <li>Real-time energy usage tracking</li>
+                <li>Appliance-wise consumption analysis</li>
+                <li>Cost predictions and savings recommendations</li>
+                <li>Historical usage patterns</li>
+            </ul>
+        </div>
+        <div class="mt-4">
+            <h5>How to Use:</h5>
+            <div class="step-card">
+                <span class="step-number">1</span>
+                <strong>Add Energy Reading:</strong> Use the form on the dashboard to input your current meter reading
+            </div>
+            <div class="step-card">
+                <span class="step-number">2</span>
+                <strong>View Analytics:</strong> Check the graphs and charts for usage patterns
+            </div>
+            <div class="step-card">
+                <span class="step-number">3</span>
+                <strong>Get Recommendations:</strong> Review AI-powered suggestions for energy savings
+            </div>
+        </div>
+    </div>
+
+    <!-- Carbon Tracker -->
+    <div class="guide-section">
+        <h3><i class="fas fa-leaf text-success me-2"></i>Carbon Tracker</h3>
+        <div class="feature-card">
+            <h5>Key Features:</h5>
+            <ul>
+                <li>Personal carbon footprint monitoring</li>
+                <li>Activity-based impact calculation</li>
+                <li>Community leaderboard</li>
+                <li>Eco-friendly challenges</li>
+            </ul>
+        </div>
+        <div class="mt-4">
+            <h5>How to Use:</h5>
+            <div class="step-card">
+                <span class="step-number">1</span>
+                <strong>Log Activities:</strong> Record your daily activities that impact carbon footprint
+            </div>
+            <div class="step-card">
+                <span class="step-number">2</span>
+                <strong>Track Progress:</strong> Monitor your impact reduction over time
+            </div>
+            <div class="step-card">
+                <span class="step-number">3</span>
+                <strong>Join Challenges:</strong> Participate in community eco-challenges
+            </div>
+        </div>
+    </div>
+
+    <!-- Food Waste Management -->
+    <div class="guide-section">
+        <h3><i class="fas fa-utensils text-primary me-2"></i>Food Waste Management</h3>
+        <div class="feature-card">
+            <h5>Key Features:</h5>
+            <ul>
+                <li>Food waste tracking</li>
+                <li>AI-powered waste analysis</li>
+                <li>Waste reduction statistics</li>
+                <li>Segregation guidelines</li>
+            </ul>
+        </div>
+        <div class="mt-4">
+            <h5>How to Use:</h5>
+            <div class="step-card">
+                <span class="step-number">1</span>
+                <strong>Log Waste:</strong> Record food items that are being discarded
+            </div>
+            <div class="step-card">
+                <span class="step-number">2</span>
+                <strong>Analyze Waste:</strong> Use AI analysis for better waste management
+            </div>
+            <div class="step-card">
+                <span class="step-number">3</span>
+                <strong>View Impact:</strong> Track your waste reduction progress
+            </div>
+        </div>
+    </div>
+
+    <!-- Environmental Impact -->
+    <div class="guide-section">
+        <h3><i class="fas fa-chart-line text-info me-2"></i>Impact Dashboard</h3>
+        <div class="feature-card">
+            <h5>Key Features:</h5>
+            <ul>
+                <li>Comprehensive environmental metrics</li>
+                <li>Personal eco-score</li>
+                <li>Achievement system</li>
+                <li>Community statistics</li>
+            </ul>
+        </div>
+        <div class="mt-4">
+            <h5>How to Use:</h5>
+            <div class="step-card">
+                <span class="step-number">1</span>
+                <strong>Check Score:</strong> View your current eco-score and achievements
+            </div>
+            <div class="step-card">
+                <span class="step-number">2</span>
+                <strong>Track Progress:</strong> Monitor your environmental impact metrics
+            </div>
+            <div class="step-card">
+                <span class="step-number">3</span>
+                <strong>Compare Stats:</strong> See how you compare with the community
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

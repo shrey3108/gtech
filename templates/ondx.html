@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carbon Tracker</title>
+    <style>
+        /* General styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #4CAF50;
+        }
+
+        /* Form styles */
+        .form-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group select, .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Table styles */
+        .activities-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th, table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Carbon Footprint Tracker</h1>
+
+        <!-- Activity Form -->
+        <div class="form-container">
+            <h2>Log New Activity</h2>
+            <form id="activityForm">
+                <div class="form-group">
+                    <label for="activityType">Activity Type</label>
+                    <select id="activityType" name="activityType" required>
+                        <option value="">Select Type</option>
+                        <option value="transport">Transportation</option>
+                        <option value="energy">Energy Usage</option>
+                        <option value="waste">Waste Management</option>
+                        <option value="food">Food & Diet</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="specificActivity">Specific Activity</label>
+                    <select id="specificActivity" name="specificActivity" required>
+                        <option value="">Select Activity</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="quantity">Quantity</label>
+                    <input type="number" id="quantity" name="quantity" step="0.1" min="0.1" required>
+                </div>
+                <div class="form-group">
+                    <label for="unit">Unit</label>
+                    <select id="unit" name="unit" required>
+                        <option value="">Select Unit</option>
+                    </select>
+                </div>
+                <button type="submit">Log Activity</button>
+            </form>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="activities-container">
+            <h2>Recent Activities</h2>
+            <table id="activitiesTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Activity Type</th>
+                        <th>Specific Activity</th>
+                        <th>Quantity</th>
+                        <th>Unit</th>
+                        <th>Impact (kg CO2)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Activities will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const activityForm = document.getElementById('activityForm');
+            const activityType = document.getElementById('activityType');
+            const specificActivity = document.getElementById('specificActivity');
+            const unit = document.getElementById('unit');
+            const activitiesTable = document.getElementById('activitiesTable').getElementsByTagName('tbody')[0];
+
+            // Activity options based on type
+            const activityOptions = {
+                'transport': {
+                    activities: ['Car Travel', 'Bus Travel', 'Train Travel', 'Air Travel', 'Bicycle'],
+                    units: ['km', 'miles']
+                },
+                'energy': {
+                    activities: ['Electricity Usage', 'Natural Gas', 'Heating Oil'],
+                    units: ['kWh', 'therms', 'gallons']
+                },
+                'waste': {
+                    activities: ['Landfill Waste', 'Recycling', 'Composting'],
+                    units: ['kg', 'lbs']
+                },
+                'food': {
+                    activities: ['Meat Consumption', 'Dairy Products', 'Plant-based Meals'],
+                    units: ['kg', 'lbs', 'servings']
+                }
+            };
+
+            // Update specific activities and units when activity type changes
+            activityType.addEventListener('change', function () {
+                const selectedType = this.value;
+                const options = activityOptions[selectedType] || { activities: [], units: [] };
+
+                // Update specific activities
+                specificActivity.innerHTML = '<option value="">Select Activity</option>' +
+                    options.activities.map(activity =>
+                        `<option value="${activity.toLowerCase().replace(/ /g, '_')}">${activity}</option>`
+                    ).join('');
+
+                // Update units
+                unit.innerHTML = '<option value="">Select Unit</option>' +
+                    options.units.map(unit =>
+                        `<option value="${unit}">${unit}</option>`
+                    ).join('');
+            });
+
+            // Handle form submission
+            activityForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const data = {
+                    activityType: formData.get('activityType'),
+                    specificActivity: formData.get('specificActivity'),
+                    quantity: parseFloat(formData.get('quantity')),
+                    unit: formData.get('unit')
+                };
+
+                // Log activity to the backend
+                fetch('/api/log_activity', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Activity logged successfully!');
+                        activityForm.reset();
+                        loadActivities(); // Reload activities
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error logging activity');
+                });
+            });
+
+            // Load activities from the backend
+            function loadActivities() {
+                fetch('/api/carbon/activities')
+                    .then(response => response.json())
+                    .then(data => {
+                        activitiesTable.innerHTML = ''; // Clear existing rows
+                        data.forEach(activity => {
+                            const row = activitiesTable.insertRow();
+                            row.innerHTML = `
+                                <td>${new Date(activity.timestamp).toLocaleString()}</td>
+                                <td>${activity.activity_type}</td>
+                                <td>${activity.specific_activity}</td>
+                                <td>${activity.quantity}</td>
+                                <td>${activity.unit}</td>
+                                <td>${activity.carbon_impact.toFixed(2)}</td>
+                            `;
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            }
+
+            // Load activities on page load
+            loadActivities();
+        });
+    </script>
+</body>
+</html>

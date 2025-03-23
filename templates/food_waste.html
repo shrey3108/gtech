@@ -1,0 +1,433 @@
+{% extends "base.html" %}
+
+{% block content  %}
+    <style>
+        /* Add your custom styles here */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-card {
+            text-align: center;
+            padding: 15px;
+        }
+
+        .metric-card i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #4CAF50;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2196F3;
+        }
+
+        .metric-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .notification.show {
+            opacity: 1;
+        }
+
+        .notification.success {
+            background-color: #4CAF50;
+        }
+
+        .notification.error {
+            background-color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="glass-card">
+                    <h2 class="text-center mb-4">
+                        <i class="fas fa-utensils me-2 text-success"></i>
+                        Food Waste Tracker
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="glass-card metric-card">
+                    <i class="fas fa-apple-alt"></i>
+                    <div class="metric-value" id="foodSaved">0</div>
+                    <div class="metric-label">KG Food Saved</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card metric-card">
+                    <i class="fas fa-utensils"></i>
+                    <div class="metric-value" id="mealsProvided">0</div>
+                    <div class="metric-label">Meals Provided</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card metric-card">
+                    <i class="fas fa-cloud"></i>
+                    <div class="metric-value" id="co2Saved">0</div>
+                    <div class="metric-label">KG CO2 Saved</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Food Item Form -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="glass-card">
+                    <h4 class="mb-4">Add Food Item</h4>
+                    <form id="addFoodForm">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="foodType" class="form-label">Food Type</label>
+                                <select class="form-select" id="foodType" required>
+                                    <option value="">Select Food Type</option>
+                                    <option value="fruits">Fruits</option>
+                                    <option value="vegetables">Vegetables</option>
+                                    <option value="dairy">Dairy</option>
+                                    <option value="grains">Grains</option>
+                                    <option value="meat">Meat</option>
+                                    <option value="seafood">Seafood</option>
+                                    <option value="prepared">Prepared Food</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="quantity" class="form-label">Quantity (KG)</label>
+                                <input type="number" class="form-control" id="quantity" step="0.1" min="0.1" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="expiry" class="form-label">Expiry Date</label>
+                                <input type="date" class="form-control" id="expiry" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="storage" class="form-label">Storage Type</label>
+                                <select class="form-select" id="storage" required>
+                                    <option value="">Select Storage Type</option>
+                                    <option value="refrigerated">Refrigerated</option>
+                                    <option value="frozen">Frozen</option>
+                                    <option value="room_temp">Room Temperature</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Add Item
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Food Items -->
+        <div class="row">
+            <div class="col-12">
+                <div class="glass-card">
+                    <h4 class="mb-4">Available Food Items</h4>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Quantity (KG)</th>
+                                    <th>Expiry</th>
+                                    <th>Storage</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="foodItemsTable">
+                                <!-- Food items will be dynamically inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // JavaScript code (as provided earlier)
+        document.addEventListener('DOMContentLoaded', function() {
+    const addFoodForm = document.getElementById('addFoodForm');
+    const notification = document.getElementById('notification');
+
+    // Add Food Item
+    addFoodForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const foodData = {
+            type: document.getElementById('foodType').value,
+            quantity: parseFloat(document.getElementById('quantity').value),
+            expiry: document.getElementById('expiry').value,
+            storage: document.getElementById('storage').value
+        };
+
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+
+        fetch('/api/food/items', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(foodData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            showNotification(data.message || 'Food item added successfully!', 'success');
+            addFoodForm.reset();
+            updateStats();
+            loadFoodItems();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification(error.message || 'Error adding food item', 'error');
+        })
+        .finally(() => {
+            // Reset button state
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        });
+    });
+
+    // Load Food Items
+    function loadFoodItems() {
+        fetch('/api/food/items')
+            .then(response => response.json())
+            .then(items => {
+                if (items.error) {
+                    throw new Error(items.error);
+                }
+
+                const tableBody = document.getElementById('foodItemsTable');
+                tableBody.innerHTML = items.map(item => `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-${getFoodIcon(item.type)} me-2 text-primary"></i>
+                                ${formatFoodType(item.type)}
+                            </div>
+                        </td>
+                        <td>${item.quantity.toFixed(1)} KG</td>
+                        <td>${formatDate(item.expiry)}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-${getStorageIcon(item.storage)} me-2"></i>
+                                ${formatStorage(item.storage)}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-${getStatusColor(item.status)}">
+                                ${formatStatus(item.status)}
+                            </span>
+                        </td>
+                        <td>
+                            ${item.status === 'available' ?
+                                `<button class="btn btn-sm btn-success claim-btn" data-id="${item._id}">
+                                    <i class="fas fa-check me-1"></i>Claim
+                                </button>` :
+                                '<span class="badge bg-secondary">Claimed</span>'
+                            }
+                        </td>
+                    </tr>
+                `).join('');
+
+                // If no items, show a message
+                if (items.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <i class="fas fa-box-open text-muted mb-2" style="font-size: 2rem;"></i>
+                                <p class="text-muted mb-0">No food items available</p>
+                            </td>
+                        </tr>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading food items:', error);
+                showNotification(error.message || 'Error loading food items', 'error');
+            });
+    }
+
+    // Update Stats
+    function updateStats() {
+        fetch('/api/food/stats')
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                document.getElementById('foodSaved').textContent = data.total_food_saved.toFixed(1);
+                document.getElementById('mealsProvided').textContent = Math.round(data.meals_provided);
+                document.getElementById('co2Saved').textContent = data.co2_saved.toFixed(1);
+            })
+            .catch(error => {
+                console.error('Error updating stats:', error);
+                showNotification(error.message || 'Error updating stats', 'error');
+            });
+    }
+
+    // Claim Food Item
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('claim-btn') || e.target.parentElement.classList.contains('claim-btn')) {
+            const btn = e.target.classList.contains('claim-btn') ? e.target : e.target.parentElement;
+            const itemId = btn.dataset.id;
+
+            // Show loading state
+            const originalBtnText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            fetch(`/api/food/items/${itemId}/claim`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                showNotification(data.message || 'Food item claimed successfully!', 'success');
+                updateStats();
+                loadFoodItems();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification(error.message || 'Error claiming food item', 'error');
+                // Reset button state on error
+                btn.disabled = false;
+                btn.innerHTML = originalBtnText;
+            });
+        }
+    });
+
+    // Helper Functions
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        // Check if date is today or tomorrow
+        if (date.toDateString() === today.toDateString()) {
+            return 'Today';
+        } else if (date.toDateString() === tomorrow.toDateString()) {
+            return 'Tomorrow';
+        }
+
+        // Otherwise show full date
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    }
+
+    function formatStorage(storage) {
+        return storage.split('_').map(word =>
+            word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ');
+    }
+
+    function formatFoodType(type) {
+        return type.charAt(0).toUpperCase() + type.slice(1);
+    }
+
+    function formatStatus(status) {
+        return status.charAt(0).toUpperCase() + status.slice(1);
+    }
+
+    function getFoodIcon(type) {
+        const icons = {
+            'fruits': 'apple-alt',
+            'vegetables': 'carrot',
+            'dairy': 'cheese',
+            'grains': 'bread-slice',
+            'meat': 'drumstick-bite',
+            'seafood': 'fish',
+            'prepared': 'utensils'
+        };
+        return icons[type.toLowerCase()] || 'shopping-basket';
+    }
+
+    function getStorageIcon(storage) {
+        const icons = {
+            'refrigerated': 'snowflake',
+            'frozen': 'icicles',
+            'room_temp': 'temperature-low'
+        };
+        return icons[storage] || 'box';
+    }
+
+    function getStatusColor(status) {
+        const colors = {
+            'available': 'success',
+            'claimed': 'secondary',
+            'expired': 'danger'
+        };
+        return colors[status] || 'secondary';
+    }
+
+    function showNotification(message, type) {
+        notification.textContent = message;
+        notification.className = `notification ${type} show`;
+        setTimeout(() => notification.classList.remove('show'), 3000);
+    }
+
+    // Set minimum date for expiry input to today
+    const expiryInput = document.getElementById('expiry');
+    const today = new Date().toISOString().split('T')[0];
+    expiryInput.min = today;
+
+    // Initialize
+    loadFoodItems();
+    updateStats();
+
+    // Update stats every minute
+    setInterval(updateStats, 60000);
+});
+    </script>
+</body>
+ {% endblock %}

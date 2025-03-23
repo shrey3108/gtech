@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - EcoTrack+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Profile Information -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="mb-4">
+                        <div class="display-1 mb-3">
+                            <i class="fas fa-user-circle text-success"></i>
+                        </div>
+                        <h3 class="mb-1">{{ current_user.name }}</h3>
+                        <p class="text-muted">{{ current_user.user_data.email }}</p>
+                    </div>
+                    <div class="d-grid">
+                        <button class="btn btn-outline-success" type="button" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                            <i class="fas fa-edit me-2"></i>Edit Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-4">Your Impact Statistics</h4>
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="text-center p-3 border rounded">
+                                <div class="display-4 text-success mb-2">
+                                    <i class="fas fa-leaf"></i>
+                                </div>
+                                <h5 id="carbonSaved">0</h5>
+                                <small class="text-muted">kg CO₂ Saved</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 border rounded">
+                                <div class="display-4 text-primary mb-2">
+                                    <i class="fas fa-recycle"></i>
+                                </div>
+                                <h5 id="wasteRecycled">0</h5>
+                                <small class="text-muted">kg Waste Recycled</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 border rounded">
+                                <div class="display-4 text-warning mb-2">
+                                    <i class="fas fa-utensils"></i>
+                                </div>
+                                <h5 id="foodSaved">0</h5>
+                                <small class="text-muted">kg Food Saved</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm" method="POST" action="{{ url_for('update_profile') }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ current_user.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ current_user.user_data.email }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">New Password (leave blank to keep current)</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password">
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save me-2"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load user statistics
+function loadUserStats() {
+    Promise.all([
+        fetch('/api/get_carbon_stats').then(res => res.json()),
+        fetch('/get_waste_data').then(res => res.json()),
+        fetch('/api/food/stats').then(res => res.json())
+    ])
+    .then(([carbonData, wasteData, foodData]) => {
+        document.getElementById('carbonSaved').textContent = 
+            Math.round(carbonData.total_savings || 0);
+        document.getElementById('wasteRecycled').textContent = 
+            Math.round(wasteData.total_recycled || 0);
+        document.getElementById('foodSaved').textContent = 
+            Math.round(foodData.total_saved || 0);
+    })
+    .catch(error => console.error('Error loading stats:', error));
+}
+
+// Load stats when page loads
+document.addEventListener('DOMContentLoaded', loadUserStats);
+
+// Password validation
+document.getElementById('editProfileForm').addEventListener('submit', function(event) {
+    const newPassword = document.getElementById('new_password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    
+    if (newPassword && newPassword !== confirmPassword) {
+        event.preventDefault();
+        alert('New passwords do not match!');
+    }
+});
+</script>
+{% endblock %}

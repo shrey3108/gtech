@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}EcoTrack+ - Smart Energy & Sustainability Platform{% endblock %}
+
+{% block styles %}
+<style>
+    :root {
+        --primary-color: #00c853;
+        --secondary-color: #2962ff;
+        --accent-color: #ff3d00;
+        --background-color: #f5f6fa;
+    }
+
+    .hero-section {
+        background: linear-gradient(135deg, rgba(0, 200, 83, 0.1) 0%, rgba(41, 98, 255, 0.1) 100%);
+        padding: 80px 0;
+        margin-bottom: 60px;
+    }
+
+    .feature-card {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        padding: 30px;
+        margin-bottom: 30px;
+        transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 12px 40px rgba(31, 38, 135, 0.25);
+    }
+
+    .feature-icon {
+        font-size: 2.5em;
+        margin-bottom: 20px;
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .stat-card {
+        text-align: center;
+        padding: 20px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-value {
+        font-size: 2.5em;
+        font-weight: bold;
+        color: var(--primary-color);
+        margin: 10px 0;
+    }
+
+    .stat-label {
+        color: #666;
+    }
+
+    .cta-section {
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 60px 0;
+        margin-top: 60px;
+        border-radius: 20px;
+    }
+
+    .eco-tip {
+        background: rgba(0, 200, 83, 0.1);
+        border-left: 4px solid var(--primary-color);
+        padding: 20px;
+        border-radius: 0 10px 10px 0;
+        margin: 20px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 mb-4">Welcome to EcoTrack+</h1>
+                <p class="lead mb-4">Your comprehensive platform for energy monitoring, waste management, and sustainable living. Make a positive impact on the environment while saving on energy costs.</p>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                    <a href="{{ url_for('energy_monitor') }}" class="btn btn-primary btn-lg px-4 me-md-2">Get Started</a>
+                    <a href="{{ url_for('user_guide') }}" class="btn btn-outline-secondary btn-lg px-4">Learn More</a>
+                </div>
+            </div>
+            <!--<div class="col-lg-6">
+                <img src="{{ url_for('static', filename='img/hero-image.svg') }}" alt="Smart Energy Monitoring" class="img-fluid">
+            </div>-->
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container mb-5">
+    <h2 class="text-center mb-5">Our Features</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="feature-card">
+                <i class="fas fa-bolt feature-icon"></i>
+                <h3>Smart Energy Monitor</h3>
+                <p>Track your energy usage in real-time, identify patterns, and get personalized recommendations for optimization.</p>
+                <a href="{{ url_for('energy_monitor') }}" class="btn btn-outline-primary">Monitor Energy</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <i class="fas fa-recycle feature-icon"></i>
+                <h3>Waste Management</h3>
+                <p>Efficiently track and manage your waste segregation. Get insights on recycling and composting.</p>
+                <a href="{{ url_for('waste_segregation_page') }}" class="btn btn-outline-primary">Manage Waste</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <i class="fas fa-leaf feature-icon"></i>
+                <h3>Carbon Tracker</h3>
+                <p>Monitor your carbon footprint and take actions to reduce your environmental impact.</p>
+                <a href="{{ url_for('carbon_tracker') }}" class="btn btn-outline-primary">Track Impact</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="container mb-5">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <i class="fas fa-users text-primary mb-3"></i>
+                <div class="stat-value" id="totalUsers">{{ stats.total_users }}</div>
+                <div class="stat-label">Active Users</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <i class="fas fa-bolt text-warning mb-3"></i>
+                <div class="stat-value" id="energySaved">{{ stats.energy_saved }}</div>
+                <div class="stat-label">kWh Saved</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card">
+                <i class="fas fa-tree text-success mb-3"></i>
+                <div class="stat-value" id="carbonReduced">{{ stats.carbon_reduced }}</div>
+                <div class="stat-label">kg CO₂ Reduced</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Eco Tip Section -->
+<div class="container mb-5">
+    <div class="eco-tip">
+        <h4><i class="fas fa-lightbulb text-warning me-2"></i>Eco Tip of the Day</h4>
+        <p id="ecoTip">{{ eco_tip }}</p>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="container">
+    <div class="cta-section text-center">
+        <h2 class="mb-4">Ready to Make a Difference?</h2>
+        <p class="lead mb-4">Join thousands of users who are already making a positive impact on the environment.</p>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('energy_monitor') }}" class="btn btn-light btn-lg">Go to Dashboard</a>
+        {% else %}
+            <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">Sign Up Now</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fetch latest stats periodically
+    function updateStats() {
+        fetch('/api/get_energy_dashboard_data')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('totalUsers').textContent = data.total_users;
+                    document.getElementById('energySaved').textContent = data.energy_saved.toFixed(2);
+                    document.getElementById('carbonReduced').textContent = data.carbon_reduced.toFixed(2);
+                    document.getElementById('ecoTip').textContent = data.eco_tip;
+                }
+            })
+            .catch(error => console.error('Error fetching stats:', error));
+    }
+
+    // Update stats every 5 minutes
+    updateStats();
+    setInterval(updateStats, 300000);
+});
+</script>
+{% endblock %}
